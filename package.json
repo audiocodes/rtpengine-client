@@ -11,6 +11,7 @@
   "author": "Dave Horton",
   "license": "MIT",
   "files": [
+    "index.d.ts",
     "index.js",
     "lib/"
   ],
