@@ -6,13 +6,6 @@ const decode = Client.decodeMessage;
 const encode = Client.encodeMessage;
 const debug = require('debug')('rtpengine:test');
 const fs = require('fs');
-const data = {
-  nosplit: fs.readFileSync(`${__dirname}/data/nosplit.txt`),
-  split1: fs.readFileSync(`${__dirname}/data/split-part1.txt`),
-  split2: fs.readFileSync(`${__dirname}/data/split-part2.txt`),
-  nonmessage: 'this is not a message',
-  sample: 'd3:bar4:spam3:fooi42ee'
-};
 
 const statResponse = Buffer.from(fs.readFileSync(`${__dirname}/data/nosplit.txt`));
 
@@ -22,7 +15,7 @@ const roundTripTime = (startAt) => {
   return time.toFixed(0);
 };
 
-function fakeRtpEngine(client, message, port, host, callback) {
+function fakeRtpEngine(_client, message, _port, _host, callback) {
   const obj = decode(message);
 
   callback(null);
@@ -36,18 +29,18 @@ function fakeRtpEngine(client, message, port, host, callback) {
       break;
   }
 }
-function fakeRtpEngineFail(client, message, port, host, callback) {
+function fakeRtpEngineFail(_client, _message, _port, _host, callback) {
   callback(new Error('error sending'));
 }
 
-function fakeRtpEngineFail2(client, message, port, host, callback) {
+function fakeRtpEngineFail2(_client, _message, _port, _host, _callback) {
   setImmediate(() => { this.emit('error', 'unexpected error of some kind'); });
 }
 
-function fakeRtpEngineFail3(client, message, port, host, callback) {
+function fakeRtpEngineFail3(_client, _message, _port, _host, _callback) {
   setImmediate(() => { this.emit('message', 'unparseable message'); });
 }
-function fakeRtpEngineFail4(client, message, port, host, callback) {
+function fakeRtpEngineFail4(client, message, _port, _host, callback) {
   setImmediate(() => {
     const obj = decode(message);
     client.messages.delete(obj.id);
@@ -142,6 +135,7 @@ test('ping({port, host})', (t) => {
     .then((res) => {
       t.equal(res.result, 'pong', 'received \'pong\'');
       client.close();
+      return;
     })
     .catch((err) => {
       client.close();
@@ -159,6 +153,7 @@ test('ping(port, host)', (t) => {
     .then((res) => {
       t.equal(res.result, 'pong', 'received \'pong\'');
       client.close();
+      return;
     })
     .catch((err) => {
       client.close();
@@ -189,11 +184,12 @@ test('error sending', (t) => {
     .callsFake(fakeRtpEngineFail.bind(client.socket, client));
 
   client.ping(22222, '35.195.250.243')
-    .then((res) => {
+    .then(() => {
       t.fail('expected send failure');
       client.close();
+      return;
     })
-    .catch((err) => {
+    .catch(() => {
       client.close();
       t.pass('rejects Promise when send fails');
     });
@@ -206,7 +202,7 @@ test('socket error', (t) => {
     .callsFake(fakeRtpEngineFail2.bind(client.socket, client));
 
   client.ping(22222, '35.195.250.243');
-  client.on('error', (err) => {
+  client.on('error', () => {
     t.pass('error is emitted by client');
     client.close();
   });
@@ -232,13 +228,15 @@ test('timeout', (t) => {
     .callsFake(fakeRtpEngineFail5.bind(client.socket, client));
 
   client.ping({port: 22222, host: '35.195.250.243'})
-    .then((res) => {
+    .then(() => {
       t.fail('expected send failure');
       client.close();
+      return;
     })
     .catch((err) => {
       client.close();
-      t.equals(err.message, 'rtpengine timeout host:35.195.250.243 port:22222', 'rtpengine timeout is emitted by client');
+      t.equals(err.message,
+        'rtpengine timeout host:35.195.250.243 port:22222', 'rtpengine timeout is emitted by client');
     });
 });
 
@@ -249,7 +247,7 @@ test.skip('message correlation error', (t) => {
     .callsFake(fakeRtpEngineFail4.bind(client.socket, client));
 
   client.ping(22222, '35.195.250.243');
-  client.on('error', (err) => {
+  client.on('error', () => {
     t.pass();
     client.close();
   });
@@ -262,13 +260,16 @@ test('tcp - single message', (t) => {
   t.plan(1);
   const server = new FakeRtpEngine({port: 3457, scenario: 'nosplit'});
   const client = new TcpClient('localhost:3457');
-  client.on('connect', () => {
-    client.statistics()
-    .then((res) => {
+  client.on('connect', async() => {
+    try {
+      await client.statistics();
       t.pass();
+    } catch (err) {
+      t.fail(err);
+    } finally {
       client.close();
       server.close();
-    });
+    }
   });
 });
 
@@ -276,13 +277,16 @@ test('tcp - message broken into two frames', (t) => {
   t.plan(1);
   const server = new FakeRtpEngine({port: 3457, scenario: 'split'});
   const client = new TcpClient('localhost:3457');
-  client.on('connect', () => {
-    client.statistics()
-    .then((res) => {
+  client.on('connect', async() => {
+    try {
+      await client.statistics();
       t.pass();
+    } catch (err) {
+      t.fail(err);
+    } finally {
       client.close();
       server.close();
-    });
+    }
   });
 });
 
@@ -290,13 +294,16 @@ test('tcp - not a message', (t) => {
   t.plan(1);
   const server = new FakeRtpEngine({port: 3457, scenario: 'nonmessage'});
   const client = new TcpClient('localhost:3457');
-  client.on('connect', () => {
-    client.statistics()
-    .then((res) => {
+  client.on('connect', async() => {
+    try {
+      await client.statistics();
       t.pass();
+    } catch (err) {
+      t.fail(err);
+    } finally {
       client.close();
       server.close();
-    });
+    }
   });
   client.on('error', (err) => {
     console.log(`msg: ${err.message}`);
@@ -318,14 +325,15 @@ test('benchmark', (t) => {
   const startAt = process.hrtime();
   for (let i = 0; i < total; i++) {
     const even = i % 2 === 0;
-    client[even ? 'ping': 'statistics'](22222, '35.195.250.243')
-      .then((res) => {
+    client[even ? 'ping' : 'statistics'](22222, '35.195.250.243')
+      .then(() => {
         if (++responses === total) {
           const rtt = roundTripTime(startAt);
           t.pass(`time to send/receive ${total} requests: ${rtt}ms`);
           client.close();
         }
         //else console.log({res}, `responses: ${res}`);
+        return;
       })
       .catch((err) => {
         client.close();

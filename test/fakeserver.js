@@ -13,7 +13,7 @@ const debug = require('debug')('rtpengine:test');
 const waitFor = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 class FakeServer {
-  constructor({port, scenario}) {
+  constructor({ port, scenario }) {
     assert.ok(['nosplit', 'split', 'combine', 'nonmessage'].includes(scenario), `invalid scenario: ${scenario}`);
     this.scenario = scenario;
     this.server = net.createServer();
@@ -32,11 +32,11 @@ class FakeServer {
   }
 
   _onConnection(socket) {
-    socket.on('error', (err) => {});
+    socket.on('error', () => { });
     socket.on('data', (d) => {
       const arr = /^(.*)\s/.exec(d.toString());
       const msgId = arr[1];
-      debug({data: d.toString()}, `got data with msg id ${msgId}`);
+      debug({ data: d.toString() }, `got data with msg id ${msgId}`);
       switch (this.scenario) {
         case 'nosplit':
           socket.write(`${msgId} ${data.nosplit}`);
@@ -44,25 +44,24 @@ class FakeServer {
         case 'split':
           socket.write(`${msgId} ${data.split1}`, 'utf8');
           waitFor(500)
-            .then(() => {
-              socket.write(data.split2, 'utf8');
-            })
+            .then(() => socket.write(data.split2, 'utf8'))
+            .catch((err) => console.error(err));
           break;
         case 'nonmessage':
           for (let i = 0; i < 10000; i++) {
             if (!socket.destroyed) socket.write(`${msgId} this is not bencoded `, 'utf8');
-            }
+          }
           break;
         default:
           socket.write(`${msgId} ${data.combine}`, 'utf8');
-          break;     
+          break;
       }
     });
   }
 
   _onError(err) {
     console.error('Fakserver error', err);
-    throw(err);
+    throw err;
   }
 }
 
