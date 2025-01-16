@@ -10,6 +10,10 @@
   },
   "author": "Dave Horton",
   "license": "MIT",
+  "files": [
+    "index.js",
+    "lib/"
+  ],
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@types/bencode": "^2.0.4",
