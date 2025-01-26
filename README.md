@@ -51,7 +51,9 @@ client.on('listening', () => {
 ```
 
 ## Making requests
-The ng request verbs (`ping`, `offer`, `answer`, `delete`, `query`, `start recording`, `stop recording`, `block DTMF`, `unblock DTMF`, `block media`, `unblock media`) are available as methods on the `client` object.  The sytax for each is the same:
+The ng request verbs (`ping`, `offer`, `answer`, `delete`, `query`, `start recording`, `stop recording`,
+`pause recording`, `block DTMF`, `unblock DTMF`, `block media`, `unblock media`)
+are available as methods on the `client` object.  The sytax for each is the same:
 + the destination of the request comes first, either as `port, host` or `{port, host}`
 + following that, if any options are required for the request, those come next in an object.
 
@@ -68,6 +70,7 @@ Function names are as follows:
 |query             | query            |
 |start recording   | startRecording   |
 |stop recording    | stopRecording    |
+|pause recording   | pauseRecording   |
 |block DTMF        | blockDTMF        |
 |unblock DTMF      | unblockDTMF      |
 |play DTMF         | playDTMF         |
