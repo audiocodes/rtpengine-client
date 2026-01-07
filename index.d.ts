@@ -243,6 +243,7 @@ export interface StopRecordingArgs extends BaseArgs {
   'from-tag'?: string;
   'to-tag'?: string;
   'via-branch'?: string;
+  metadata?: string;
 }
 
 // Start recording parameters
@@ -255,8 +256,8 @@ export interface StartRecordingArgs extends StopRecordingArgs {
 export interface MediaOpArgs extends BaseArgs {
   'call-id': string;
   'from-tag'?: string;
-  'address'?: string;
-  'label'?: string;
+  address?: string;
+  label?: string;
 }
 
 // Play Media parameters
