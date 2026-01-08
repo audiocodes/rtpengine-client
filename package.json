@@ -1,6 +1,6 @@
 {
   "name": "@audc/rtpengine-client",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "node client for rtpengine daemon",
   "main": "index.js",
   "scripts": {
