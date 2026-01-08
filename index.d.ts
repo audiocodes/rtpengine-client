@@ -155,6 +155,7 @@ interface BaseResponse {
 
 export interface OfferResponse extends BaseResponse {
   sdp: string;
+  recordings?: string[];
 }
 
 // Delete parameters (as you provided)
