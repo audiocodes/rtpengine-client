@@ -40,6 +40,34 @@ export interface HostAndPort {
 type NgBoolean = 'yes' | 'no' | 'on' | 'off';
 type StringList = string | string[];
 
+export interface CodecOptions {
+  accept?: StringList;
+  consume?: StringList;
+  except?: StringList;
+  ignore?: StringList;
+  mask?: StringList;
+  offer?: StringList;
+  set?: StringList;
+  strip?: StringList;
+  transcode?: StringList;
+}
+
+type SdpAttrValue = string;
+type SdpAttrSubstitutePair = [from: SdpAttrValue, to: SdpAttrValue];
+
+export interface SdpAttrCommands {
+  add?: SdpAttrValue[];
+  remove?: SdpAttrValue[];
+  substitute?: SdpAttrSubstitutePair | SdpAttrSubstitutePair[];
+}
+
+export interface SdpAttrOptions {
+  none?: SdpAttrCommands;
+  global?: SdpAttrCommands;
+  audio?: SdpAttrCommands;
+  video?: SdpAttrCommands;
+}
+
 type MediaFlags = 'initialized' |
   'asymmetric' |
   'send' |
@@ -139,8 +167,8 @@ export interface OfferArgs extends BaseArgs {
   volume?: number;
   'xmlrpc-callback'?: string;
   replace?: ('force-increment-sdp-ver' | 'origin' | 'origin-full' | 'session-name' | 'SDP-version' | 'username' | 'zero-address')[];
-  codec?: Record<string, unknown>;
-  'sdp-attr'?: Record<string, unknown>;
+  codec?: CodecOptions;
+  'sdp-attr'?: SdpAttrOptions;
   'sdp-media-remove'?: StringList;
 }
 
@@ -292,7 +320,111 @@ export interface PlayDTMFArgs extends MediaOpArgs {
 }
 
 export interface StatisticsResponse extends BaseResponse {
-  statistics: Record<string, unknown>;
+  statistics: StatisticsPayload;
+}
+
+interface StatisticsCurrent {
+  sessionsown: number;
+  sessionsforeign: number;
+  sessionstotal: number;
+  transcodedmedia: number;
+  packetrate: number;
+  byterate: number;
+  errorrate: number;
+}
+
+interface StatisticsTotal {
+  uptime: string;
+  managedsessions: number;
+  rejectedsessions: number;
+  timeoutsessions: number;
+  silenttimeoutsessions: number;
+  finaltimeoutsessions: number;
+  offertimeoutsessions: number;
+  regularterminatedsessions: number;
+  forcedterminatedsessions: number;
+  relayedpackets: number;
+  relayedpacketerrors: number;
+  zerowaystreams: number;
+  onewaystreams: number;
+  avgcallduration: string;
+}
+
+interface StatisticsInterval {
+  totalcallsduration: string;
+  minmanagedsessions: number;
+  maxmanagedsessions: number;
+  minofferdelay: string;
+  maxofferdelay: string;
+  avgofferdelay: string;
+  minanswerdelay: string;
+  maxanswerdelay: string;
+  avganswerdelay: string;
+  mindeletedelay: string;
+  maxdeletedelay: string;
+  avgdeletedelay: string;
+  minofferrequestrate: number;
+  maxofferrequestrate: number;
+  avgofferrequestrate: number;
+  minanswerrequestrate: number;
+  maxanswerrequestrate: number;
+  avganswerrequestrate: number;
+  mindeleterequestrate: number;
+  maxdeleterequestrate: number;
+  avgdeleterequestrate: number;
+}
+
+interface StatisticsControlProxy {
+  proxy: string;
+  pingcount: number;
+  offercount: number;
+  answercount: number;
+  deletecount: number;
+  querycount: number;
+  listcount: number;
+  startreccount: number;
+  stopreccount: number;
+  startfwdcount: number;
+  stopfwdcount: number;
+  blkdtmfcount: number;
+  unblkdtmfcount: number;
+  blkmedia: number;
+  unblkmedia: number;
+  playmedia: number;
+  stopmedia: number;
+  playdtmf: number;
+  statistics: number;
+  errorcount: number;
+}
+
+interface StatisticsControl {
+  proxies: StatisticsControlProxy[];
+  totalpingcount: number;
+  totaloffercount: number;
+  totalanswercount: number;
+  totaldeletecount: number;
+  totalquerycount: number;
+  totallistcount: number;
+  totalstartreccount: number;
+  totalstopreccount: number;
+  totalstartfwdcount: number;
+  totalstopfwdcount: number;
+  totalblkdtmfcount: number;
+  totalunblkdtmfcount: number;
+  totalblkmedia: number;
+  totalunblkmedia: number;
+  totalplaymedia: number;
+  totalstopmedia: number;
+  totalplaydtmf: number;
+  totalstatistics: number;
+  totalerrorcount: number;
+}
+
+export interface StatisticsPayload {
+  currentstatistics: StatisticsCurrent;
+  totalstatistics: StatisticsTotal;
+  intervalstatistics: StatisticsInterval;
+  controlstatistics: StatisticsControl;
 }
 
 type MediaMode = 'sendrecv' | 'sendonly' | 'recvonly' | 'inactive';
@@ -310,7 +442,7 @@ interface SubscribeRequest {
   'from-tag'?: string;
   'to-tag': string;
   'from-tags'?: string[];
-  'tag-medias'?: Record<string, unknown>[];
+  'tag-medias'?: TagLabel[];
   'tag-labels'?: Record<string, TagLabel>;
 }
 
