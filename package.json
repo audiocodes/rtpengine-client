@@ -24,7 +24,7 @@
     "debug": "^4.4.3",
     "eslint": "^9.39.2",
     "eslint-plugin-promise": "^7.2.1",
-    "globals": "^17.0.0",
+    "globals": "^17.3.0",
     "sinon": "^21.0.1",
     "tape": "^5.9.0"
   },
